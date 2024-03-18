@@ -1,12 +1,103 @@
-import React from "react";
+import React, { useState } from "react"
 import { Link } from "react-router-dom";
 import { courses } from "../Database";
-function Dashboard() {
+import * as db from "../Database";
+function Dashboard( { courses, course, setCourse, addNewCourse,
+                        deleteCourse, updateCourse }: {
+    courses: any[]; course: any; setCourse: (course: any) => void;
+    addNewCourse: () => void; deleteCourse: (course: any) => void;
+    updateCourse: () => void; })
+    {
+
+    // const [courses, setCourses] = useState(db.courses);
+    // const [course, setCourse] = useState({
+    //     _id: "0", name: "New Course", number: "New Number",
+    //     startDate: "2023-09-10", endDate: "2023-12-15",
+    //     image: "/images/starship.jpg"
+    // });
+    // const updateCourse = () => {
+    //     setCourses(
+    //         courses.map((c) => {
+    //             if (c._id === course._id) {
+    //                 return course;
+    //             } else {
+    //                 return c;
+    //             }
+    //         })
+    //     );
+    // };
+    //
+    // const addNewCourse = () => {
+    //     const newCourse = { ...course,
+    //         _id: new Date().getTime().toString() };
+    //     setCourses([...courses, { ...course, ...newCourse }]);
+    // };
+    //
+    // const deleteCourse = (courseId: string) => {
+    //     setCourses(courses.filter((course) => course._id !== courseId));
+    // };
+
+
     return (
         <div className="p-4">
             <h1 style={{fontWeight: 300}}>Dashboard</h1>
             <hr/>
-            <h3>Published Courses (6)</h3>
+            <h5>Course</h5>
+            <div className="form-group">
+                <label htmlFor="courseName">Course Name:</label>
+                <input
+                    id="courseName"
+                    type="text"
+                    value={course.name}
+                    className="form-control"
+                    onChange={(e) => setCourse({...course, name: e.target.value})}
+                />
+            </div>
+
+            <div className="form-group">
+                <label htmlFor="courseNumber">Course Number:</label>
+                <input
+                    id="courseNumber"
+                    type="text"
+                    value={course.number}
+                    className="form-control"
+                    onChange={(e) => setCourse({...course, number: e.target.value})}
+                />
+            </div>
+
+            <div className="form-group">
+                <label htmlFor="startDate">Start Date:</label>
+                <input
+                    id="startDate"
+                    type="date"
+                    value={course.startDate}
+                    className="form-control"
+                    onChange={(e) => setCourse({...course, startDate: e.target.value})}
+                />
+            </div>
+
+            <div className="form-group">
+                <label htmlFor="endDate">End Date:</label>
+                <input
+                    id="endDate"
+                    type="date"
+                    value={course.endDate}
+                    className="form-control"
+                    onChange={(e) => setCourse({...course, endDate: e.target.value})}
+                />
+            </div>
+
+            <button className="btn btn-primary m-1" onClick={addNewCourse}>
+                Add
+            </button>
+            <button className="btn btn-primary m-1" onClick={updateCourse}>
+                Update
+            </button>
+
+
+            <hr/>
+            <h2>Published Courses ({courses.length})</h2>
+
             <hr/>
             <div className="row">
                 <div className="row row-cols-1 row-cols-md-5 g-4">
@@ -23,7 +114,28 @@ function Dashboard() {
                                               color: "navy",
                                               fontWeight: "bold"
                                           }}>
-                                        {course.name} </Link>
+                                        {course.name}
+                                        <br/>
+                                        <button
+                                            className="btn btn-outline-secondary m-1 float-right"
+                                            onClick={(event) => {
+                                                event.preventDefault();
+                                                setCourse(course);
+                                            }}>
+                                            Edit
+                                        </button>
+
+                                        <button
+                                            className="btn btn-outline-secondary m-1 float-right"
+                                            onClick={(event) => {
+                                                event.preventDefault();
+                                                deleteCourse(course._id);
+                                            }}>
+                                            Delete
+                                        </button>
+
+
+                                    </Link>
                                     <p className="card-text">{course.name}</p>
                                     <Link to={`/Kanbas/Courses/${course._id}/Home`}
                                           className="btn btn-primary">
@@ -36,6 +148,6 @@ function Dashboard() {
             </div>
         </div>
     );
-}
+    }
 
 export default Dashboard;

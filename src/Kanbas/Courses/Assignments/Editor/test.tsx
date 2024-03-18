@@ -6,58 +6,39 @@ import { KanbasState } from "../../../store";
 import {addAssignment, updateAssignment, setAssignment} from "../reducer";
 import {useDispatch, useSelector} from "react-redux";
 function AssignmentEditor() {
-    const { courseId, assignmentId } = useParams();
-    const navigate = useNavigate();
+    const {courseId, assignmentId} = useParams();
+    const assignments = useSelector((state: KanbasState) => state.assignmentsReducer.assignments);
+    const assignment = useSelector((state: KanbasState) => state.assignmentsReducer.assignment);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const globalAssignments = useSelector((state: KanbasState) => state.assignmentsReducer.assignments);
-    // Using local state for form control, initializing with a default structure
-    const [localAssignment, setLocalAssignment] = useState({
-        title:"new assignments",
-        description:"assignments description",
-        points:"100",
-        dueDate:"2023-09-10",
-        availableFromDate:"2023-10-10",
-        availableUntilDate:"2023-10-10"
-    });
 
     useEffect(() => {
-        if (assignmentId === 'new') {
-            // Reset or set defaults for a new assignment
-            setLocalAssignment({
-                title:"new assignments",
-                description:"assignments description",
-                points:"100",
-                dueDate:"2023-09-10",
-                availableFromDate:"2023-10-10",
-                availableUntilDate:"2023-10-10"
-            });
-        } else {
-            // Find and set the existing assignment for editing
-            const assignmentToEdit = globalAssignments.find(a => a._id === assignmentId);
+        if (assignmentId !== 'new' && !assignment) {
+            // This assumes you have a way to find an assignment by its ID in your global state
+            // or you might need to fetch it here if it's not already in the global state
+            const assignmentToEdit = assignments.find(a => a._id === assignmentId);
             if (assignmentToEdit) {
-                setLocalAssignment(assignmentToEdit);
+                dispatch(setAssignment(assignmentToEdit));
             }
         }
-    }, [assignmentId, globalAssignments]);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setLocalAssignment(prevState => ({
-            ...prevState,
-            [name]: value,
-        }));
-    };
-
-
-
+    }, [assignmentId, dispatch, assignments, assignment]);
     const handleSave = () => {
-        const action = assignmentId === 'new' ? addAssignment : updateAssignment;
-        dispatch(action({ ...localAssignment, course: courseId }));
+        if (assignmentId === 'new') {
+            // Assuming addAssignment action creator properly handles adding the assignment
+            dispatch(addAssignment({...assignment, course: courseId}));
+        } else {
+            // Assuming updateAssignment action creator properly handles updating the assignment
+            dispatch(updateAssignment(assignment));
+        }
         navigate(`/Kanbas/Courses/${courseId}/Assignments`);
     };
 
+
     return (
+
         <div>
+
             <div className="container">
                 <div className="row mt-3">
                     <div className="col-md-2">
@@ -68,33 +49,35 @@ function AssignmentEditor() {
                 </div>
             </div>
 
+
             <hr/>
             <h4>Assignment Name</h4>
+
+
             <input
-                name="title"
-                value={localAssignment.title}
-                onChange={handleChange}
-                className="form-control mb-2"
-            />
+                value={assignment.title}
+                onChange={(e) =>
+                    dispatch(setAssignment({...assignment, title: e.target.value}))
+                } className="form-control mb-2"/>
 
 
             <textarea
-                name="description"
                 className="form-control"
-                value={localAssignment.description}
-                onChange={handleChange}
-            />
+                value={assignment.description}
+                onChange={(e) =>
+                    dispatch(setAssignment({...assignment, description: e.target.value}))
+                }/>
+
             <br/>
 
-            <div className="d-flex col-md-6">
-                <label className="p-2" htmlFor="points">Points</label>
-                <input
-                    name="points"
-                    value={localAssignment.points}
-                    onChange={handleChange}
-                    className="form-control"
-                    id="points"
-                />
+            <div className="row">
+                <div className="d-flex col-md-6">
+                    <label className="p-2" htmlFor="points">Points</label>
+                    <input value={assignment.points}
+                           onChange={(e) =>
+                               dispatch(setAssignment({...assignment, points: e.target.value}))
+                           } className="form-control" id="points"/>
+                </div>
             </div>
 
             <div className="row">
@@ -130,8 +113,10 @@ function AssignmentEditor() {
 
                 <div className="form-group">
                     <label>Due Date</label><br/>
-                    <input name="dueDate" value={localAssignment.dueDate}
-                           onChange={handleChange} className="form-control" type="date"/>
+                    <input value={assignment.dueDate}
+                           onChange={(e) =>
+                               dispatch(setAssignment({...assignment, dueDate: e.target.value}))
+                           } className="form-control" type="date"/>
                     <br/>
                 </div>
 
@@ -139,8 +124,13 @@ function AssignmentEditor() {
                     <div className="row">
                         <div className="col-md-4">
                             <label>Available from</label><br/>
-                            <input name="availableFromDate" value={localAssignment.availableFromDate}
-                                   onChange={handleChange}
+                            <input value={assignment.availableFromDate}
+                                   onChange={(e) =>
+                                       dispatch(setAssignment({
+                                           ...assignment,
+                                           availableFromDate: e.target.value
+                                       }))
+                                   }
                                    className="form-control" type="date"
                             />
                             <br/>
@@ -148,8 +138,13 @@ function AssignmentEditor() {
 
                         <div className="col-md-4">
                             <label>Until</label><br/>
-                            <input name="availableUntilDate" value={localAssignment.availableUntilDate}
-                                   onChange={handleChange} className="form-control" type="date"
+                            <input value={assignment.availableUntilDate}
+                                   onChange={(e) =>
+                                       dispatch(setAssignment({
+                                           ...assignment,
+                                           availableUntilDate: e.target.value
+                                       }))
+                                   } className="form-control" type="date"
                             />
                             <br/>
                         </div>
@@ -157,6 +152,13 @@ function AssignmentEditor() {
                 </div>
             </fieldset>
 
+
+
+
+            {/*<button*/}
+            {/*    onClick={() => dispatch(updateAssignment(assignment))}>*/}
+            {/*    Update*/}
+            {/*</button>*/}
 
             <div className="d-flex justify-content-center">
                 <Link to={`/Kanbas/Courses/${courseId}/Assignments`}
@@ -168,9 +170,11 @@ function AssignmentEditor() {
                     save
                 </button>
             </div>
+
         </div>
+
+
     );
 }
-
 
 export default AssignmentEditor;
